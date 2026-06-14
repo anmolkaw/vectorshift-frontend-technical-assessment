@@ -157,6 +157,8 @@ const FieldControl = ({ id, field, data, updateNodeField }) => {
   );
 };
 
+// BaseNode centralizes the repeated React Flow node shell while letting each
+// node stay declarative about its fields, handles, styling, and custom content.
 export const BaseNode = ({
   id,
   data,

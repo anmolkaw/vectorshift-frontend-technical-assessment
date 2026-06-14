@@ -1,70 +1,129 @@
-# Getting Started with Create React App
+# Frontend
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+This folder contains the React frontend for the VectorShift frontend technical
+assessment. It implements a node-based pipeline builder with React Flow and
+Zustand.
+
+For the full project overview, backend details, architecture notes, and testing
+instructions, see the root `README.md`.
+
+## Key Source Files
+
+- `src/App.js`
+  - App shell that renders the toolbar, canvas, and submit controls.
+- `src/ui.js`
+  - React Flow canvas setup, node registration, drag/drop handling, and graph
+    event wiring.
+- `src/store.js`
+  - Zustand store for nodes, edges, node ids, and field updates.
+- `src/toolbar.js`
+  - Node library rendered from the shared node registry.
+- `src/draggableNode.js`
+  - Node palette tile with drag-and-drop and click-to-add behavior.
+- `src/submit.js`
+  - Sends the current graph to the backend parser.
+- `src/index.css`
+  - Application, canvas, node, form, handle, and submit styling.
+- `src/nodes/baseNode.js`
+  - Shared node abstraction for layout, fields, handles, labels, and custom
+    content.
+- `src/nodes/nodeDefinitions.js`
+  - Central registry for node types, labels, categories, components, and initial
+    data.
+- `src/nodes/demoNodes.js`
+  - Five example nodes built with the shared abstraction.
+- `src/nodes/textNode.js`
+  - Text node auto-resizing and dynamic variable handle logic.
 
 ## Available Scripts
 
-In the project directory, you can run:
+Run these commands from this `frontend` directory.
 
 ### `npm start`
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+Starts the development server.
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+```bash
+npm start
+```
 
-### `npm test`
+Open:
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+```text
+http://localhost:3000
+```
 
 ### `npm run build`
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+Builds the frontend for production.
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+```bash
+npm run build
+```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+### `npm test`
 
-### `npm run eject`
+Starts the Create React App test runner.
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+```bash
+npm test
+```
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+## Node Abstraction
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+Nodes are defined using composition around `BaseNode`.
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+Simple nodes provide configuration such as:
 
-## Learn More
+- title
+- description
+- accent color
+- fields
+- handles
+- optional custom body content
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+This keeps new node implementations small and prevents repeated node container,
+form, and handle code across files.
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+## Text Node Behavior
 
-### Code Splitting
+The Text node supports:
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+- automatic width and height growth based on entered text
+- sensible minimum and maximum dimensions
+- parsing variables written as `{{ variableName }}`
+- unique left-side input handles for valid variables
+- React Flow internals updates when dynamic handles change
 
-### Analyzing the Bundle Size
+Valid variables follow:
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+```text
+^[A-Za-z_$][A-Za-z0-9_$]*$
+```
 
-### Making a Progressive Web App
+## Backend Connection
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+The frontend submit button sends:
 
-### Advanced Configuration
+```json
+{
+  "nodes": [],
+  "edges": []
+}
+```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+to:
 
-### Deployment
+```text
+http://localhost:8000/pipelines/parse
+```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+The backend responds with:
 
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+```json
+{
+  "num_nodes": 0,
+  "num_edges": 0,
+  "is_dag": true
+}
+```
